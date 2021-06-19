@@ -6,6 +6,7 @@ const CreateApp = () => {
   app = express();
   app.use(express.json());
   const userRepository = new UserFileSystemRepository();
+  UserController(app, userRepository);
   return app;
 };
 

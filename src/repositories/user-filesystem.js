@@ -1,12 +1,13 @@
 const { User } = require("../entities/user");
 const fs = require("fs");
 
+// Do not use this in production
 class UserFileSystemRepository {
   constructor(file) {
     this.file = file || "./users.json";
     if (fs.existsSync(this.file)) {
       const databaseContent = fs.readFileSync(this.file, { encoding: "utf-8" });
-      this.database = JSON.stringify(databaseContent);
+      this.database = JSON.parse(databaseContent);
       this.counter = Object.keys(this.database).length;
     } else {
       this.database = {};
@@ -33,6 +34,20 @@ class UserFileSystemRepository {
   findAll() {
     const users = Object.values(this.database);
     return users.map((user) => new User(user));
+  }
+
+  delete(id) {
+    delete this.database[id];
+    this._write();
+    return;
+  }
+
+  update(id, user) {
+    const userToUpdate = this.database[id];
+    if (userToUpdate) {
+      Object.assign(userToUpdate, user);
+    }
+    return userToUpdate;
   }
 
   _write() {
