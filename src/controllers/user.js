@@ -1,22 +1,47 @@
-// TODO: Implement RESTful API in this controller as per your openAPI spec design
 const UserController = (app, userRepository) => {
-  // The first endpoint has already been done for you.
-  // request.body contains the data that was sent in JSON
-  // response.json is a function to send the final response in JSON with 200 HTTP Code
-  // userRepository (src/repositories/user-filesystem.js)
-  // contains all the functions to read and write to a (fake) database
   app.get("/users", (request, response) => {
     const users = userRepository.findAll();
     response.json(users);
   });
 
-  // TODO: Endpoint to create a user
+  app.post("/users", (req, res) => {
+    const newUser = {
+      name: req.body.name,
+      email: req.body.email,
+    };
+    const user = userRepository.insert(newUser);
+    res.json(user);
+  });
 
-  // TODO: Endpoint to get a single user by id
+  app.get("/users/:user_id", (req, res) => {
+    const id = req.params.user_id;
+    const user = userRepository.find(id);
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
+  });
 
-  // TODO: Endpoint to update the details of a user by id
+  app.put("/users/:user_id", (req, res) => {
+    const fieldsToUpdate = {
+      name: req.body.name,
+      email: req.body.email,
+    };
+    const id = req.params.user_id;
+    const user = userRepository.update(id, fieldsToUpdate);
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
+  });
 
-  // TODO: Endpoint to delete a user by id
+  app.delete("/users/:user_id", (req, res) => {
+    const id = req.params.user_id;
+    userRepository.delete(id);
+    res.json({});
+  });
 };
 
 module.exports = {
