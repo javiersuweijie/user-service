@@ -19,23 +19,23 @@ describe("AuthenticationService", () => {
   describe("loginAndGenerateJwt", () => {
     describe("given a user that is found", () => {
       beforeAll(() => {
-        userRepository.findByEmail.mockReturnValue({
+        userRepository.findByEmail.mockResolvedValue({
           email: "test@user.com",
           name: "test",
           password_hash: hashPassword("password123"),
           id: 1,
         });
       });
-      test("return token when password is correct", () => {
-        const token = authenticationService.loginAndGenerateJwt({
+      test("return token when password is correct", async () => {
+        const token = await authenticationService.loginAndGenerateJwt({
           email: "test@user.com",
           password: "password123",
         });
         expect(token).toBeTruthy();
         expect(token.split(".").length).toBe(3);
       });
-      test("return undefined when password is wrong", () => {
-        const token = authenticationService.loginAndGenerateJwt({
+      test("return undefined when password is wrong", async () => {
+        const token = await authenticationService.loginAndGenerateJwt({
           email: "test@user.com",
           password: "wrong",
         });
@@ -44,10 +44,10 @@ describe("AuthenticationService", () => {
     });
     describe("given a user that is not found", () => {
       beforeAll(() => {
-        userRepository.findByEmail.mockReturnValue(undefined);
+        userRepository.findByEmail.mockResolvedValue(undefined);
       });
-      test("return undefined when trying to login", () => {
-        const token = authenticationService.loginAndGenerateJwt({
+      test("return undefined when trying to login", async () => {
+        const token = await authenticationService.loginAndGenerateJwt({
           email: "test@user.com",
           password: "wrong",
         });

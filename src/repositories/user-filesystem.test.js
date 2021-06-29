@@ -8,23 +8,24 @@ describe("UserFileSystemRepository", () => {
       let userRepository;
       beforeEach(() => {
         fs.readFileSync.mockReturnValue("{}");
+        fs.promises = { writeFile: jest.fn().mockResolvedValue(true) };
         userRepository = new UserFileSystemRepository();
       });
-      test("should insert a user", () => {
-        const user = userRepository.insert({
+      test("should insert a user", async () => {
+        const user = await userRepository.insert({
           email: "test@user.com",
           name: "tester",
           password_hash: "123123",
         });
         expect(user.id).toBe(0);
       });
-      test("should insert two users with ascending id", () => {
-        userRepository.insert({
+      test("should insert two users with ascending id", async () => {
+        await userRepository.insert({
           email: "test@user.com",
           name: "tester",
           password_hash: "123123",
         });
-        const user = userRepository.insert({
+        const user = await userRepository.insert({
           email: "test2@user.com",
           name: "tester2",
           password_hash: "123123",
