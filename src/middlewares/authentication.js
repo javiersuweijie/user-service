@@ -12,7 +12,7 @@ class AuthenticationMiddleware {
       try {
         const user_id = this.authenticationService.validateJwt(jwtToken);
         req.user_id = user_id;
-        return next();
+        return next(null);
       } catch (e) {
         return res.status(401).json({ error: "Unauthorized to call this API" });
       }
