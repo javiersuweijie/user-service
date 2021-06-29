@@ -5,7 +5,9 @@ const { UserFileSystemRepository } = require("./repositories/user-filesystem");
 const { AuthenticationService } = require("./services/authentication");
 const { AuthenticationMiddleware } = require("./middlewares/authentication");
 
-const CreateApp = async () => {
+const JWT_SECRET = process.env.JWT_SECRET;
+
+const CreateApp = () => {
   app = express();
   app.use(express.json());
   app.use(cookieParser());
@@ -15,6 +17,7 @@ const CreateApp = async () => {
   await userRepository.connect();
   const authenticationService = new AuthenticationService(userRepository);
   const authenticationMiddleware = new AuthenticationMiddleware(
+    JWT_SECRET,
     authenticationService
   );
   UserController(

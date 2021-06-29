@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "User service implementation for Part 5",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node src/server.js"
   },
   "author": "",
@@ -15,6 +15,8 @@
     "jsonwebtoken": "^8.5.1"
   },
   "devDependencies": {
+    "@types/jest": "^26.0.23",
+    "jest": "^27.0.5",
     "prettier": "2.3.1"
   }
 }

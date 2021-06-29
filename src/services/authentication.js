@@ -1,9 +1,9 @@
 const { hashPassword } = require("../password-utils");
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET;
 
 class AuthenticationService {
-  constructor(userRepository) {
+  constructor(secret, userRepository) {
+    this.secret = secret;
     this.userRepository = userRepository;
   }
 
@@ -13,28 +13,28 @@ class AuthenticationService {
     if (!user) {
       return;
     }
-    if (!this.checkPassword(user.password_hash, password)) {
+    if (!this._checkPassword(user.password_hash, password)) {
       return;
     }
-    return this.generateJwt(user.id);
+    return this._generateJwt(user.id);
   }
 
-  checkPassword(passwordHash, passwordSent) {
+  validateJwt(token) {
+    const verifiedToken = jwt.verify(token, this.secret);
+    const userId = verifiedToken.user_id;
+    return userId;
+  }
+
+  _checkPassword(passwordHash, passwordSent) {
     const submittedPasswordHash = hashPassword(passwordSent);
     return passwordHash === submittedPasswordHash;
   }
 
-  generateJwt(userId) {
-    const token = jwt.sign({ user_id: userId }, JWT_SECRET, {
+  _generateJwt(userId) {
+    const token = jwt.sign({ user_id: userId }, this.secret, {
       expiresIn: 60 * 60, // 1 hour
     });
     return token;
-  }
-
-  validateJwt(token) {
-    const verifiedToken = jwt.verify(token, JWT_SECRET);
-    const userId = verifiedToken.user_id;
-    return userId;
   }
 }
 
