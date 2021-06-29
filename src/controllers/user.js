@@ -1,21 +1,21 @@
 const UserController = (app, userRepository) => {
-  app.get("/users", (request, response) => {
-    const users = userRepository.findAll();
+  app.get("/users", async (request, response) => {
+    const users = await userRepository.findAll();
     response.json(users);
   });
 
-  app.post("/users", (req, res) => {
+  app.post("/users", async (req, res) => {
     const newUser = {
       name: req.body.name,
       email: req.body.email,
     };
-    const user = userRepository.insert(newUser);
+    const user = await userRepository.insert(newUser);
     res.json(user);
   });
 
-  app.get("/users/:user_id", (req, res) => {
+  app.get("/users/:user_id", async (req, res) => {
     const id = req.params.user_id;
-    const user = userRepository.find(id);
+    const user = await userRepository.find(id);
     if (user) {
       res.json(user);
     } else {
@@ -23,13 +23,13 @@ const UserController = (app, userRepository) => {
     }
   });
 
-  app.put("/users/:user_id", (req, res) => {
+  app.put("/users/:user_id", async (req, res) => {
     const fieldsToUpdate = {
       name: req.body.name,
       email: req.body.email,
     };
     const id = req.params.user_id;
-    const user = userRepository.update(id, fieldsToUpdate);
+    const user = await userRepository.update(id, fieldsToUpdate);
     if (user) {
       res.json(user);
     } else {
@@ -37,9 +37,9 @@ const UserController = (app, userRepository) => {
     }
   });
 
-  app.delete("/users/:user_id", (req, res) => {
+  app.delete("/users/:user_id", async (req, res) => {
     const id = req.params.user_id;
-    userRepository.delete(id);
+    await userRepository.delete(id);
     res.json({});
   });
 };
