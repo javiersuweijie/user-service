@@ -16,33 +16,33 @@ class UserFileSystemRepository {
     }
   }
 
-  insert(userToInsert) {
+  async insert(userToInsert) {
     const user = new User({
       ...userToInsert,
       id: this.counter,
     });
     this.database[user.id] = user;
-    this._write();
+    await this._write();
     this.counter++;
     return user;
   }
 
-  find(id) {
+  async find(id) {
     return this.database[id];
   }
 
-  findAll() {
+  async findAll() {
     const users = Object.values(this.database);
     return users.map((user) => new User(user));
   }
 
-  delete(id) {
+  async delete(id) {
     delete this.database[id];
-    this._write();
+    await this._write();
     return;
   }
 
-  update(id, user) {
+  async update(id, user) {
     const userToUpdate = this.database[id];
     if (userToUpdate) {
       Object.assign(userToUpdate, user);
@@ -50,9 +50,9 @@ class UserFileSystemRepository {
     return userToUpdate;
   }
 
-  _write() {
+  async _write() {
     const databaseString = JSON.stringify(this.database, null, 2);
-    fs.writeFileSync(this.file, databaseString);
+    return fs.writeFile(this.file, databaseString);
   }
 }
 
