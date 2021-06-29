@@ -52,7 +52,7 @@ class UserFileSystemRepository {
 
   async _write() {
     const databaseString = JSON.stringify(this.database, null, 2);
-    return fs.writeFile(this.file, databaseString);
+    return fs.promises.writeFile(this.file, databaseString);
   }
 }
 
