@@ -48,7 +48,10 @@ class UserFileSystemRepository {
     if (!user instanceof User) {
       throw new Error("Input needs to be a User object");
     }
-    this.database[this.counter] = user;
+    this.database[this.counter] = {
+      ...user,
+      id: this.counter,
+    };
     await this._write();
     this.counter++;
     return user;
@@ -62,7 +65,10 @@ class UserFileSystemRepository {
   async find(id) {
     await this._read();
     const userObject = this.database[id];
-    return new User(userObject);
+    if (userObject) {
+      return new User(userObject);
+    }
+    return;
   }
 
   /**
@@ -98,8 +104,8 @@ class UserFileSystemRepository {
     const userToUpdate = this.database[id];
     if (userToUpdate) {
       Object.assign(userToUpdate, user);
+      await this.write();
     }
-    await this.write();
     return userToUpdate;
   }
 
