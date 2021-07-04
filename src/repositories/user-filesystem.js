@@ -119,7 +119,7 @@ class UserFileSystemRepository {
    * @returns Promise<?>
    */
   async _read() {
-    const databaseContent = await fs.promises.readFileSync(this.file, {
+    const databaseContent = await fs.promises.readFile(this.file, {
       encoding: "utf-8",
     });
     this.database = JSON.parse(databaseContent);

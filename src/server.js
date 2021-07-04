@@ -1,6 +1,6 @@
-require("dotenv");
+require("dotenv").config();
 const { CreateApp } = require("./app");
 (async () => {
-  const app = CreateApp();
-  app.listen(3000);
+  const app = await CreateApp();
+  app.listen(process.env.PORT || 3000);
 })();
