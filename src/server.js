@@ -1,3 +1,4 @@
+require("dotenv");
 const { CreateApp } = require("./app");
 (async () => {
   const app = CreateApp();
