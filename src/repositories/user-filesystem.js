@@ -129,7 +129,8 @@ class UserFileSystemRepository {
       encoding: "utf-8",
     });
     this.database = JSON.parse(databaseContent);
-    this.counter = Math.max(Object.keys(this.database).map((k) => Number(k)));
+    this.counter =
+      Math.max(Object.keys(this.database).map((k) => Number(k))) + 1;
     return;
   }
 }
