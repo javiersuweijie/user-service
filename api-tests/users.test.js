@@ -5,19 +5,16 @@ const request = require("supertest");
 const { CreateApp } = require("../src/app");
 const { User } = require("../src/entities/user");
 const jwt = require("jsonwebtoken");
-const fs = require("fs");
-const DATABASE_FILE = process.env.DATABASE_FILE;
-const {
-  UserFileSystemRepository,
-} = require("../src/repositories/user-filesystem");
+const { UserPostgresRepository } = require("../src/repositories/user-postgres");
 
 describe("User API tests", () => {
   let app, userRepository;
   beforeAll(async () => {
-    if (fs.existsSync(DATABASE_FILE)) {
-      fs.rmSync(DATABASE_FILE);
-    }
-    userRepository = new UserFileSystemRepository(DATABASE_FILE);
+    userRepository = new UserPostgresRepository(
+      "postgresql://postgres:password@localhost"
+    );
+    await userRepository.connect();
+    await userRepository.deleteAll();
     app = await CreateApp();
     return app;
   });
