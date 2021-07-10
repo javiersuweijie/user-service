@@ -118,10 +118,16 @@ class UserFileSystemRepository {
     if (!user instanceof User) {
       throw new Error("Input needs to be a User object");
     }
+    await this._read();
     const userToUpdate = this.database[id];
     if (userToUpdate) {
-      Object.assign(userToUpdate, user);
-      await this.write();
+      const keys = Object.keys(user);
+      for (const key of keys) {
+        if (user[key]) {
+          userToUpdate[key] = user[key];
+        }
+      }
+      await this._write();
     }
     return userToUpdate;
   }
