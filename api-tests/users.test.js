@@ -4,6 +4,7 @@ require("dotenv").config({
 const request = require("supertest");
 const { CreateApp } = require("../src/app");
 const { User } = require("../src/entities/user");
+const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const DATABASE_FILE = process.env.DATABASE_FILE;
 const {
@@ -13,7 +14,9 @@ const {
 describe("User API tests", () => {
   let app, userRepository;
   beforeAll(async () => {
-    fs.rmSync(DATABASE_FILE);
+    if (fs.existsSync(DATABASE_FILE)) {
+      fs.rmSync(DATABASE_FILE);
+    }
     userRepository = new UserFileSystemRepository(DATABASE_FILE);
     app = await CreateApp();
     return app;
@@ -27,17 +30,20 @@ describe("User API tests", () => {
     });
     describe("given some users in the database", () => {
       beforeAll(async () => {
-        await userRepository.insert({
-          email: "test@test.com",
-          name: "tester",
-          password_hash: "sdfkjlk",
-        });
-        await userRepository.insert({
-          email: "test2@test.com",
-          name: "tester 2",
-          password_hash: "sdfkjlk",
-        });
-        app = await CreateApp();
+        await userRepository.insert(
+          new User({
+            email: "test@test.com",
+            name: "tester",
+            password_hash: "sdfkjlk",
+          })
+        );
+        await userRepository.insert(
+          new User({
+            email: "test2@test.com",
+            name: "tester 2",
+            password_hash: "sdfkjlk",
+          })
+        );
         return app;
       });
       afterAll(async () => {
@@ -60,7 +66,7 @@ describe("User API tests", () => {
       afterAll(async () => {
         return userRepository.deleteAll();
       });
-      test("should create a new user with id 0", async () => {
+      test("should create a new user", async () => {
         const res = await request(app)
           .post("/users")
           .send({
@@ -69,26 +75,9 @@ describe("User API tests", () => {
             email: "tester@email.com",
           })
           .expect(200);
-        expect(res.body).toEqual({
-          id: 0,
+        expect(res.body).toMatchObject({
           name: "tester",
           email: "tester@email.com",
-          password_hash: "482c811da5d5b4bc6d497ffa98491e38",
-        });
-      });
-      test("should create another new user with id 1", async () => {
-        const res = await request(app)
-          .post("/users")
-          .send({
-            name: "tester",
-            email: "tester2@email.com",
-            password: "password",
-          })
-          .expect(200);
-        expect(res.body).toEqual({
-          id: 1,
-          name: "tester",
-          email: "tester2@email.com",
           password_hash: "482c811da5d5b4bc6d497ffa98491e38",
         });
       });
@@ -105,62 +94,71 @@ describe("User API tests", () => {
   });
   describe("GET /users/:id", () => {
     describe("given a user in the database", () => {
+      let user;
       beforeAll(async () => {
-        return userRepository.insert(
+        user = await userRepository.insert(
           new User({
             name: "tester",
             email: "tester@email.com",
             password: "password",
           })
         );
-      });
-      afterAll(async () => {
-        return await userRepository.deleteAll();
-      });
-      test("should return a user", async () => {
-        const res = await request(app).get("/users/0").expect(200);
-        expect(res.body).toEqual({
-          id: 0,
-          name: "tester",
-          email: "tester@email.com",
-          password_hash: "482c811da5d5b4bc6d497ffa98491e38",
-        });
-      });
-      test("should return 404 for an unknown user", async () => {
-        await request(app).get("/users/2").expect(404);
-      });
-    });
-  });
-  describe("PUT /users/:id", () => {
-    describe("given a user in the database", () => {
-      beforeAll(async () => {
-        return userRepository.insert(
-          new User({
-            name: "tester",
-            email: "tester@email.com",
-            password: "password",
-          })
-        );
+        return user;
       });
       afterAll(async () => {
         return await userRepository.deleteAll();
       });
       test("should return a user", async () => {
         const res = await request(app)
-          .put("/users/0")
+          .get("/users/" + user.id)
+          .expect(200);
+        expect(res.body).toMatchObject({
+          name: "tester",
+          email: "tester@email.com",
+          password_hash: "482c811da5d5b4bc6d497ffa98491e38",
+        });
+      });
+      test("should return 404 for an unknown user", async () => {
+        await request(app).get("/users/12345678").expect(404);
+      });
+    });
+  });
+  describe("PUT /users/:id", () => {
+    describe("given a user in the database", () => {
+      let user;
+      beforeAll(async () => {
+        user = await userRepository.insert(
+          new User({
+            name: "tester",
+            email: "tester@email.com",
+            password: "password",
+          })
+        );
+        return user;
+      });
+      afterAll(async () => {
+        return await userRepository.deleteAll();
+      });
+      test("should return a user", async () => {
+        const res = await request(app)
+          .put("/users/" + user.id)
           .send({
             name: "new name",
           })
           .expect(200);
-        expect(res.body).toEqual({
-          id: 0,
+        expect(res.body).toMatchObject({
           name: "new name",
           email: "tester@email.com",
           password_hash: "482c811da5d5b4bc6d497ffa98491e38",
         });
       });
       test("should return 404 for an unknown user", async () => {
-        await request(app).put("/users/1").expect(404);
+        await request(app)
+          .put("/users/999999")
+          .send({
+            name: "new name",
+          })
+          .expect(404);
       });
     });
   });
@@ -220,28 +218,30 @@ describe("User API tests", () => {
   });
   describe("GET /users/whoami", () => {
     describe("given a user in the database", () => {
+      let user;
       beforeAll(async () => {
-        return userRepository.insert(
+        user = await userRepository.insert(
           new User({
             name: "tester",
             email: "tester@email.com",
             password: "password",
           })
         );
+        return user;
       });
       afterAll(async () => {
         return await userRepository.deleteAll();
       });
       test("calling with jwt token in cookies will return the current user", async () => {
+        const token = jwt.sign({ user_id: user.id }, process.env.JWT_SECRET, {
+          expiresIn: 60 * 60, // 1 hour
+        });
         const res = await request(app)
           .get("/users/whoami")
-          .set("Cookie", [
-            "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjowLCJpYXQiOjE2MjU4OTIxNjIsImV4cCI6MTYyNTg5NTc2Mn0.DdOEFw6X6CvOLmYNKKo3QK1KVFmGkHTUuzqBpkpiN6g; Path=/; HttpOnly",
-          ])
+          .set("Cookie", [`token=${token}`])
           .expect(200);
-        expect(res.body).toEqual({
+        expect(res.body).toMatchObject({
           name: "tester",
-          id: 0,
           email: "tester@email.com",
           password_hash: "482c811da5d5b4bc6d497ffa98491e38",
         });
