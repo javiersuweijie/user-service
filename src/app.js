@@ -7,7 +7,7 @@ const { AuthenticationMiddleware } = require("./middlewares/authentication");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const CreateApp = () => {
+const CreateApp = async () => {
   app = express();
   app.use(express.json());
   app.use(cookieParser());
