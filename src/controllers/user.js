@@ -1,3 +1,5 @@
+const { User } = require("../entities/user");
+
 const UserController = (
   app,
   userRepository,
@@ -18,21 +20,21 @@ const UserController = (
 
   app.get("/users", async (req, res) => {
     const users = await userRepository.findAll();
-    res.json(users);
+    return res.json(users);
   });
 
   app.post("/users", async (req, res) => {
     const validationError = validateEmailAndPassword(req);
     if (validationError) {
-      res.status(400).json(validationError);
+      return res.status(400).json(validationError);
     }
-    const newUser = {
+    const newUser = new User({
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
-    };
+    });
     const user = await userRepository.insert(newUser);
-    res.json(user);
+    return res.json(user);
   });
 
   app.get("/users/:user_id", async (req, res) => {

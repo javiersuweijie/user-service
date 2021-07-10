@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "User service implementation for Part 5",
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand",
     "start": "node src/server.js"
   },
   "author": "",

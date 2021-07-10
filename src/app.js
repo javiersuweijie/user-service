@@ -15,9 +15,11 @@ const CreateApp = async () => {
     process.env.DATABASE_FILE
   );
   await userRepository.connect();
-  const authenticationService = new AuthenticationService(userRepository);
-  const authenticationMiddleware = new AuthenticationMiddleware(
+  const authenticationService = new AuthenticationService(
     JWT_SECRET,
+    userRepository
+  );
+  const authenticationMiddleware = new AuthenticationMiddleware(
     authenticationService
   );
   UserController(
