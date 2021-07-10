@@ -10,9 +10,7 @@ const { UserPostgresRepository } = require("../src/repositories/user-postgres");
 describe("User API tests", () => {
   let app, userRepository;
   beforeAll(async () => {
-    userRepository = new UserPostgresRepository(
-      "postgresql://postgres:password@localhost"
-    );
+    userRepository = new UserPostgresRepository(process.env.DATABASE_URL);
     await userRepository.connect();
     await userRepository.deleteAll();
     app = await CreateApp();

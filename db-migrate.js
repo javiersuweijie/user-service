@@ -1,7 +1,7 @@
 const { Client } = require("pg");
-const connectionString = "postgresql://postgres:password@localhost";
+const DATABASE_URL = process.env.DATABASE_URL;
 const client = new Client({
-  connectionString,
+  connectionString: DATABASE_URL,
 });
 
 (async () => {
