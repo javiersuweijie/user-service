@@ -150,6 +150,15 @@ class UserFileSystemRepository {
     this.counter = keys.length === 1 ? 0 : Math.max(keys);
     return;
   }
+
+  /**
+   * Delete all users in the database
+   */
+  async deleteAll() {
+    this.database = {};
+    this.counter = 0;
+    return this._write();
+  }
 }
 
 module.exports = {
