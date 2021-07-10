@@ -88,10 +88,7 @@ class UserFileSystemRepository {
    * @returns {User|undefined}
    */
   async findByEmail(email) {
-<<<<<<< HEAD
     await this._read();
-=======
->>>>>>> Refactored to use promises
     const user = Object.values(this.database).find(
       (user) => user.email === email
     );
