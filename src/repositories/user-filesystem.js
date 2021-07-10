@@ -15,7 +15,7 @@ class UserFileSystemRepository {
    */
   constructor(file) {
     if (UserFileSystemRepository.repositoryInstance) {
-      return repositoryInstance;
+      return UserFileSystemRepository.repositoryInstance;
     }
     if (!file) {
       throw new Error("Database requires a file input");
@@ -48,13 +48,14 @@ class UserFileSystemRepository {
     if (!user instanceof User) {
       throw new Error("Input needs to be a User object");
     }
-    this.database[this.counter] = {
+    const userToSave = {
       ...user,
       id: this.counter,
     };
+    this.database[this.counter] = userToSave;
     await this._write();
     this.counter++;
-    return user;
+    return userToSave;
   }
 
   /**
@@ -79,6 +80,22 @@ class UserFileSystemRepository {
     await this._read();
     const users = Object.values(this.database);
     return users.map((user) => new User(user));
+  }
+
+  /**
+   * Find User by email. Returns the first user that matches the email
+   * @param {string} email
+   * @returns {User|undefined}
+   */
+  async findByEmail(email) {
+    await this._read();
+    const user = Object.values(this.database).find(
+      (user) => user.email === email
+    );
+    if (user) {
+      return new User(user);
+    }
+    return;
   }
 
   /**
@@ -129,8 +146,8 @@ class UserFileSystemRepository {
       encoding: "utf-8",
     });
     this.database = JSON.parse(databaseContent);
-    this.counter =
-      Math.max(Object.keys(this.database).map((k) => Number(k))) + 1;
+    const keys = Object.keys(this.database).map((k) => Number(k));
+    this.counter = keys.length === 1 ? 0 : Math.max(keys);
     return;
   }
 }
