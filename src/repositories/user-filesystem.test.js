@@ -7,9 +7,13 @@ describe("UserFileSystemRepository", () => {
     describe("given an empty database", () => {
       let userRepository;
       beforeEach(() => {
-        fs.readFileSync.mockReturnValue("{}");
-        fs.promises = { writeFile: jest.fn().mockResolvedValue(true) };
-        userRepository = new UserFileSystemRepository();
+        fs.promises = {
+          writeFile: jest.fn().mockResolvedValue(true),
+          readFile: jest.fn().mockResolvedValue("{}"),
+        };
+        fs.existsSync = jest.fn().mockReturnValue(true);
+        userRepository = new UserFileSystemRepository("noop");
+        userRepository.connect();
       });
       test("should insert a user", async () => {
         const user = await userRepository.insert({
