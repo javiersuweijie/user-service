@@ -10,7 +10,6 @@ const client = new Client({
   });
   try {
     await client.connect();
-    console.log(await client.query(`DELETE FROM users;`));
     await client.query(`
     -- Just a simple user table
     CREATE TABLE IF NOT EXISTS users (
