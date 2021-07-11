@@ -41,7 +41,7 @@ jobs:
     - run: npm ci
     - run: npm test
       env:
-        DATABASE_URL: postgresql://postgres:password@localhost
+        DATABASE_URL: postgresql://postgres:password@postgres
         PORT: 3000
         JWT_SECRET: 123
         PASSWORD_SALT: 123
