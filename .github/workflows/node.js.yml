@@ -31,6 +31,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -41,7 +43,7 @@ jobs:
     - run: npm ci
     - run: npm test
       env:
-        DATABASE_URL: postgresql://postgres:password@postgres
+        DATABASE_URL: postgresql://postgres:password@localhost
         PORT: 3000
         JWT_SECRET: 123
         PASSWORD_SALT: 123
