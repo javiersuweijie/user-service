@@ -6,17 +6,14 @@ const { UserPostgresRepository } = require("./repositories/user-postgres");
 const { AuthenticationService } = require("./services/authentication");
 const { AuthenticationMiddleware } = require("./middlewares/authentication");
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const DATABASE_URL = process.env.DATABASE_URL;
-
-const CreateApp = async () => {
+const CreateApp = async (jwtSecret, databaseUrl) => {
   app = express();
   app.use(express.json());
   app.use(cookieParser());
-  const userRepository = new UserPostgresRepository(DATABASE_URL);
+  const userRepository = new UserPostgresRepository(databaseUrl);
   await userRepository.connect();
   const authenticationService = new AuthenticationService(
-    JWT_SECRET,
+    jwtSecret,
     userRepository
   );
   const authenticationMiddleware = new AuthenticationMiddleware(
@@ -28,6 +25,9 @@ const CreateApp = async () => {
     authenticationService,
     authenticationMiddleware
   );
+  app.stop = async () => {
+    return userRepository.disconnect();
+  };
   return app;
 };
 

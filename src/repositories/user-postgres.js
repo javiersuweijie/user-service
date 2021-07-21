@@ -7,20 +7,15 @@ const { Pool } = require("pg");
  * Do not use this in production
  */
 class UserPostgresRepository {
-  static repositoryInstance;
   /**
    * Creates an instance of the repository.
    * Multiple calls to this construct returns the same instance
    * @param {*} file
    */
   constructor(dataBaseUrl) {
-    if (UserPostgresRepository.repositoryInstance) {
-      return UserPostgresRepository.repositoryInstance;
-    }
     this.pool = new Pool({
       connectionString: dataBaseUrl,
     });
-    UserPostgresRepository.repositoryInstance = this;
   }
 
   /**
@@ -29,6 +24,10 @@ class UserPostgresRepository {
    */
   async connect() {
     return this.pool.connect();
+  }
+
+  async disconnect() {
+    return this.pool.end();
   }
 
   /**
