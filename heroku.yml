@@ -5,13 +5,12 @@ setup:
 build:
   docker:
     web: Dockerfile
-    # migration: Dockerfile
   config:
     PORT: '3000'
     NODE_ENV: production
-# release:
-#   command:
-#     - node db-migrate.js
-#   image: migration
+release:
+  command:
+    - node db-migrate.js
+  image: web
 run:
   web: npm start
