@@ -5,18 +5,40 @@ const request = require("supertest");
 const { CreateApp } = require("../src/app");
 const { User } = require("../src/entities/user");
 const jwt = require("jsonwebtoken");
+const {
+  connectToDb,
+  startMigration,
+  truncateTables,
+  createDatabase,
+  dropDatabase,
+} = require("../db-scripts/index");
 const { UserPostgresRepository } = require("../src/repositories/user-postgres");
+jest.setTimeout(30000);
 
 describe("User API tests", () => {
-  let app, userRepository;
+  let app, userRepository, client, databaseName;
   beforeAll(async () => {
-    userRepository = new UserPostgresRepository(process.env.DATABASE_URL);
+    databaseName = `database_${Math.floor(Math.random() * 100)}`;
+    await createDatabase(process.env.DATABASE_URL, databaseName);
+    const newDatabaseConnectionString =
+      process.env.DATABASE_URL + "/" + databaseName;
+    client = await connectToDb(newDatabaseConnectionString);
+    await startMigration(client);
+    await client.end();
+    userRepository = new UserPostgresRepository(newDatabaseConnectionString);
     await userRepository.connect();
-    await userRepository.deleteAll();
-    app = await CreateApp();
+    app = await CreateApp(process.env.JWT_SECRET, newDatabaseConnectionString);
     return app;
   });
-  describe("GET /users", () => {
+  afterAll(async () => {
+    console.log("stopping app");
+    await app.stop();
+    // console.log("stopping repo");
+    // await userRepository.disconnect();
+    // console.log("dropping database");
+    // return dropDatabase(process.env.DATABASE_URL, databaseName);
+  });
+  describe.only("GET /users", () => {
     describe("given an empty database", () => {
       test("should return empty []", async () => {
         const res = await request(app).get("/users").expect(200);
@@ -32,14 +54,13 @@ describe("User API tests", () => {
             password_hash: "sdfkjlk",
           })
         );
-        await userRepository.insert(
+        return userRepository.insert(
           new User({
             email: "test2@test.com",
             name: "tester 2",
             password_hash: "sdfkjlk",
           })
         );
-        return app;
       });
       afterAll(async () => {
         return userRepository.deleteAll();
