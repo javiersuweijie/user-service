@@ -1,5 +1,5 @@
 const { User } = require("../entities/user");
-const { Pool } = require("pg");
+const { Client } = require("pg");
 
 /**
  * UserFileSystemRepository
@@ -13,7 +13,7 @@ class UserPostgresRepository {
    * @param {*} file
    */
   constructor(dataBaseUrl) {
-    this.pool = new Pool({
+    this.pool = new Client({
       connectionString: dataBaseUrl,
     });
   }

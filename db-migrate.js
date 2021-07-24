@@ -23,10 +23,8 @@ const client = new Client({
     CREATE UNIQUE INDEX IF NOT EXISTS email_1 on users(email);
     `);
     console.log("Database migration completed");
-    process.exit();
   } catch (e) {
     console.log(e);
     console.log("Database migration failed");
-    process.exit(1);
   }
 })();

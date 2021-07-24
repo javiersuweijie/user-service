@@ -13,32 +13,43 @@ const {
   dropDatabase,
 } = require("../db-scripts/index");
 const { UserPostgresRepository } = require("../src/repositories/user-postgres");
+const { DockerComposeEnvironment } = require("testcontainers");
+const path = require("path");
+
 jest.setTimeout(30000);
 
+async function createAndMigrateDatabase(databaseUrl, databaseName) {
+  await createDatabase(databaseUrl, databaseName);
+  const client = await connectToDb(databaseUrl + "/" + databaseName);
+  await startMigration(client);
+  return client.end();
+}
+
 describe("User API tests", () => {
-  let app, userRepository, client, databaseName;
+  let app, userRepository, databaseName, compose;
   beforeAll(async () => {
+    compose = await new DockerComposeEnvironment(
+      path.resolve(__dirname),
+      "docker-compose.test.yml"
+    ).up();
     databaseName = `database_${Math.floor(Math.random() * 100)}`;
-    await createDatabase(process.env.DATABASE_URL, databaseName);
-    const newDatabaseConnectionString =
-      process.env.DATABASE_URL + "/" + databaseName;
-    client = await connectToDb(newDatabaseConnectionString);
-    await startMigration(client);
-    await client.end();
-    userRepository = new UserPostgresRepository(newDatabaseConnectionString);
+    databaseUrl = process.env.DATABASE_URL;
+    await createAndMigrateDatabase(databaseUrl, databaseName);
+    userRepository = new UserPostgresRepository(
+      databaseUrl + "/" + databaseName
+    );
     await userRepository.connect();
-    app = await CreateApp(process.env.JWT_SECRET, newDatabaseConnectionString);
+    app = await CreateApp(
+      process.env.JWT_SECRET,
+      databaseUrl + "/" + databaseName
+    );
     return app;
   });
   afterAll(async () => {
-    console.log("stopping app");
+    await userRepository.disconnect();
     await app.stop();
-    // console.log("stopping repo");
-    // await userRepository.disconnect();
-    // console.log("dropping database");
-    // return dropDatabase(process.env.DATABASE_URL, databaseName);
   });
-  describe.only("GET /users", () => {
+  describe("GET /users", () => {
     describe("given an empty database", () => {
       test("should return empty []", async () => {
         const res = await request(app).get("/users").expect(200);
