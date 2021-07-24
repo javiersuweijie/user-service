@@ -83,7 +83,6 @@ describe("User API tests", () => {
         expect(users[0]).toMatchObject({
           email: "test@test.com",
           name: "tester",
-          password_hash: "sdfkjlk",
         });
       });
     });
@@ -105,7 +104,6 @@ describe("User API tests", () => {
         expect(res.body).toMatchObject({
           name: "tester",
           email: "tester@email.com",
-          password_hash: "482c811da5d5b4bc6d497ffa98491e38",
         });
       });
       test("should return 400 if email not given", async () => {
@@ -142,7 +140,6 @@ describe("User API tests", () => {
         expect(res.body).toMatchObject({
           name: "tester",
           email: "tester@email.com",
-          password_hash: "482c811da5d5b4bc6d497ffa98491e38",
         });
       });
       test("should return 404 for an unknown user", async () => {
@@ -176,7 +173,6 @@ describe("User API tests", () => {
         expect(res.body).toMatchObject({
           name: "new name",
           email: "tester@email.com",
-          password_hash: "482c811da5d5b4bc6d497ffa98491e38",
         });
       });
       test("should return 404 for an unknown user", async () => {
@@ -270,7 +266,6 @@ describe("User API tests", () => {
         expect(res.body).toMatchObject({
           name: "tester",
           email: "tester@email.com",
-          password_hash: "482c811da5d5b4bc6d497ffa98491e38",
         });
       });
     });

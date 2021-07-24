@@ -11,7 +11,7 @@ const UserController = (
     async (req, res) => {
       const user = await userRepository.find(req.user_id);
       if (user) {
-        res.json(user);
+        res.json(userResponse(user));
       } else {
         res.status(404).json({ error: "User not found" });
       }
@@ -20,7 +20,7 @@ const UserController = (
 
   app.get("/users", async (req, res) => {
     const users = await userRepository.findAll();
-    return res.json(users);
+    return res.json(users.map((u) => userResponse(u)));
   });
 
   app.post("/users", async (req, res) => {
@@ -34,14 +34,14 @@ const UserController = (
       password: req.body.password,
     });
     const user = await userRepository.insert(newUser);
-    return res.json(user);
+    return res.json(userResponse(user));
   });
 
   app.get("/users/:user_id", async (req, res) => {
     const id = req.params.user_id;
     const user = await userRepository.find(id);
     if (user) {
-      res.json(user);
+      res.json(userResponse(user));
     } else {
       res.status(404).json({ error: "User not found" });
     }
@@ -55,7 +55,7 @@ const UserController = (
     const id = req.params.user_id;
     const user = await userRepository.update(id, fieldsToUpdate);
     if (user) {
-      res.json(user);
+      res.json(userResponse(user));
     } else {
       res.status(404).json({ error: "User not found" });
     }
@@ -96,6 +96,14 @@ function validateEmailAndPassword(req) {
     return { error: "Password is required" };
   }
   return;
+}
+
+function userResponse(user) {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  };
 }
 
 module.exports = {
