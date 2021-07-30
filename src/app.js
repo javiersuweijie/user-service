@@ -1,7 +1,6 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const { UserController } = require("./controllers/user");
-const { UserFileSystemRepository } = require("./repositories/user-filesystem");
 const { UserPostgresRepository } = require("./repositories/user-postgres");
 const { AuthenticationService } = require("./services/authentication");
 const { AuthenticationMiddleware } = require("./middlewares/authentication");

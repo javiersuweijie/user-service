@@ -39,6 +39,8 @@ class UserFileSystemRepository {
     return;
   }
 
+  async disconnect() {}
+
   /**
    * Takes in a User object and saved into the database
    * @param {User} user
@@ -103,6 +105,7 @@ class UserFileSystemRepository {
    * @param {number} id
    */
   async delete(id) {
+    await this._read();
     delete this.database[id];
     await this._write();
     return;

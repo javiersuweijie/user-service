@@ -4,6 +4,7 @@
   "description": "User service implementation for Part 5",
   "scripts": {
     "test": "jest --runInBand",
+    "db:migrate": "node db-scripts/db-migrate.js",
     "start": "node src/server.js"
   },
   "author": "",

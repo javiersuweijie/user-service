@@ -8,9 +8,7 @@ const jwt = require("jsonwebtoken");
 const {
   connectToDb,
   startMigration,
-  truncateTables,
   createDatabase,
-  dropDatabase,
 } = require("../db-scripts/index");
 const { UserPostgresRepository } = require("../src/repositories/user-postgres");
 const { DockerComposeEnvironment } = require("testcontainers");
@@ -28,17 +26,25 @@ async function createAndMigrateDatabase(databaseUrl, databaseName) {
 describe("User API tests", () => {
   let app, userRepository, databaseName, compose;
   beforeAll(async () => {
+    databaseName = `database_${Math.floor(Math.random() * 100)}`;
+    databaseUrl = process.env.DATABASE_URL;
+
+    // Start a docker compose env for the database
     compose = await new DockerComposeEnvironment(
       path.resolve(__dirname),
       "docker-compose.test.yml"
     ).up();
-    databaseName = `database_${Math.floor(Math.random() * 100)}`;
-    databaseUrl = process.env.DATABASE_URL;
+
     await createAndMigrateDatabase(databaseUrl, databaseName);
+
+    // Creating an instance of userRepository to write to the database directly
+    // when setting up tests
     userRepository = new UserPostgresRepository(
       databaseUrl + "/" + databaseName
     );
     await userRepository.connect();
+
+    // Start the application
     app = await CreateApp(
       process.env.JWT_SECRET,
       databaseUrl + "/" + databaseName

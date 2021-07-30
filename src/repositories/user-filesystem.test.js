@@ -26,19 +26,47 @@ describe("UserFileSystemRepository", () => {
           password_hash: "123123",
         });
         expect(user.id).toBe(0);
+        expect(fs.promises.writeFile.mock.calls[0][1]).toMatch(
+          JSON.stringify(
+            {
+              0: {
+                ...user,
+                id: 0,
+              },
+            },
+            null,
+            2
+          )
+        );
       });
       test("should insert two users with ascending id", async () => {
-        await userRepository.insert({
+        const user0 = await userRepository.insert({
           email: "test@user.com",
           name: "tester",
           password_hash: "123123",
         });
-        const user = await userRepository.insert({
+        const user1 = await userRepository.insert({
           email: "test2@user.com",
           name: "tester2",
           password_hash: "123123",
         });
-        expect(user.id).toBe(1);
+        expect(user1.id).toBe(1);
+        expect(fs.promises.writeFile.mock.calls[1][1]).toMatch(
+          JSON.stringify(
+            {
+              0: {
+                ...user0,
+                id: 0,
+              },
+              1: {
+                ...user1,
+                id: 1,
+              },
+            },
+            null,
+            2
+          )
+        );
       });
     });
   });
@@ -136,6 +164,48 @@ describe("UserFileSystemRepository", () => {
         });
         const updatedUser = await userRepository.update(4, user);
         expect(updatedUser).toBeUndefined();
+      });
+    });
+  });
+  describe("delete", () => {
+    describe("given a database with a few users", () => {
+      beforeEach(() => {
+        fs.promises.readFile = jest.fn().mockResolvedValue(`
+        {
+            "0": {"id": 0, "name": "tester 0", "email": "tester0@x.com"},
+            "2": {"id": 2, "name": "tester 2", "email": "tester2@x.com"}
+        }
+        `);
+      });
+      test("should delete a user", async () => {
+        await userRepository.delete(0);
+        expect(fs.promises.writeFile.mock.calls[0][1]).toMatch(
+          JSON.stringify(
+            {
+              2: { id: 2, name: "tester 2", email: "tester2@x.com" },
+            },
+            null,
+            2
+          )
+        );
+      });
+    });
+  });
+  describe("deleteAll", () => {
+    describe("given a database with a few users", () => {
+      beforeEach(() => {
+        fs.promises.readFile = jest.fn().mockResolvedValue(`
+        {
+            "0": {"id": 0, "name": "tester 0", "email": "tester0@x.com"},
+            "2": {"id": 2, "name": "tester 2", "email": "tester2@x.com"}
+        }
+        `);
+      });
+      test("should delete a user", async () => {
+        await userRepository.deleteAll();
+        expect(fs.promises.writeFile.mock.calls[0][1]).toMatch(
+          JSON.stringify({}, null, 2)
+        );
       });
     });
   });
